@@ -1,34 +1,22 @@
 body{
   background: rgb(91,97,106);
 }
-p.shadow{
-  font-size: 65px;
+H1{
+  color: #fcf7f8;
 }
 #main{
   padding-top: 50px;
   margin: 0 auto;
   text-align: center;
 }
-
-/*//https://codepen.io/pleidy/pen/EDlym*/
-.shadow {
-  color: #fcf7f8;
-  font-family: Arvo;
-  font-weight: bold;
-  text-shadow:
-    -3px -3px 0 #275dad,
-    3px -3px 0 #275dad,
-    -3px 3px 0 #275dad,
-    3px 3px 0 #275dad,
-    4px 4px 0 #fcf7f8,
-    5px 5px 0 #fcf7f8,
-    6px 6px 0 #fcf7f8,
-    7px 7px 0 #fcf7f8;
-  line-height: 0.8em;
-  letter-spacing: 0.1em;
-  transform: scaleY(0.7);
-  -webkit-transform: scaleY(0.7);
-  -moz-transform: scaleY(0.7);
-  margin:0;
-  text-align: center;
+#worktime{
+  height: 50px;
+  width: 100%;
+  background-color: #275dad;
+}
+#breaktime{
+  margin-top: 50px;
+  height: 50px;
+  width: 100%;
+  background-color: #aba9c3;
 }
