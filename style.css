@@ -3,20 +3,28 @@ body{
 }
 H1{
   color: #fcf7f8;
+  margin-top: 0px;
+}
+H2{
+  color: #fcf7f8;
+  color: #5C646C;
+  vertical-align: middle;
+  padding: 0;
+  margin: 0;
 }
 #main{
-  padding-top: 50px;
+  padding-top: 25px;
   margin: 0 auto;
   text-align: center;
 }
 #worktime{
-  height: 50px;
+  height: 25px;
   width: 100%;
-  background-color: #275dad;
+  background-color: #9bcd50;
 }
 #breaktime{
   margin-top: 50px;
-  height: 50px;
+  height: 25px;
   width: 100%;
-  background-color: #aba9c3;
+  background-color: #E0CA9A;
 }
