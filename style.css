@@ -6,11 +6,10 @@ H1{
   margin-top: 0px;
 }
 H2{
-  color: #fcf7f8;
-  color: #5C646C;
+  color: white;
   vertical-align: middle;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
 }
 #main{
   padding-top: 25px;
@@ -18,11 +17,13 @@ H2{
   text-align: center;
 }
 #worktime{
+  margin: 0 auto;
   height: 25px;
   width: 100%;
   background-color: #9bcd50;
 }
 #breaktime{
+  margin: 0 auto;
   margin-top: 50px;
   height: 25px;
   width: 100%;
