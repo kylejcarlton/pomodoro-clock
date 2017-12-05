@@ -1,14 +1,24 @@
 body{
   background: rgb(91,97,106);
 }
-@font-face{
+/*@font-face{
   font-family: lavanderia;
   src:url("/fonts/FabfeltScript/FabfeltScript-Bold.otf");
+}*/
+/*https://stackoverflow.com/questions/43327227/font-face-not-working-on-mobile*/
+@font-face {
+  font-family: FabfeltScript;
+  src: url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.eot"); /* IE9 Compat Modes */
+  src: url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.eot?#iefix") format('embedded-opentype'), /* IE6-IE8 */
+       url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff2") format('woff2'), /* Super Modern Browsers */
+       url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff") format('woff'), /* Pretty Modern Browsers */
+       url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.ttf")  format('truetype'), /* Safari, Android, iOS */
+       url("/fonts/FabfeltScript/FabfeltScript-Bold/webfont/fabfeltscript-bold.svg#svgFontName") format('svg'); /* Legacy iOS */
 }
 H1{
   color: #fcf7f8;
   margin-top: 0px;
-  font-family: lavanderia;
+  font-family: FabfeltScript;
   font-size: 3.0em;
 }
 H2{
