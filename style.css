@@ -3,8 +3,8 @@ body{
 }
 @font-face {
   font-family: 'fabfeltscript';
-  src:  url('/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff2'),
-        url('/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff');
+  src:  url('../pomodoro-clock/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff2'),
+        url('../pomodoro-clock/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff');
 }
 H1{
   color: #fcf7f8;
