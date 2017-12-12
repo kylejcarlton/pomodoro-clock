@@ -5,8 +5,9 @@ body{
 H1{
   color: #fcf7f8;
   margin-top: 0px;
+  margin-bottom: 0px;
   font-family: Yellowtail;
-  font-size: 3.0em;
+  font-size: 2.0em;
 }
 H2{
   color: white;
@@ -27,6 +28,12 @@ H2{
   height: 25px;
   width: 100%;
   background-color: #9bcd50;
+}
+#wtspan{
+  margin: 0 auto;
+  height: 25px;
+  width: 100%;
+  background-color: red;
 }
 #breaktime{
   margin: 0 auto;
