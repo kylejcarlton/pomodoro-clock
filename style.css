@@ -1,15 +1,11 @@
+@import url('https://fonts.googleapis.com/css?family=Yellowtail');
 body{
   background: rgb(91,97,106);
-}
-@font-face {
-  font-family: 'fabfeltscript';
-  src:  url('techiys.com/pomodoro-clock/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff2'),
-        url('techiys.com/pomodoro-clock/fonts/fabfeltscript/FabfeltScript-Bold/webfont/fabfeltscript-bold.woff') format('woff');
 }
 H1{
   color: #fcf7f8;
   margin-top: 0px;
-  font-family: fabfeltscript;
+  font-family: Yellowtail;
   font-size: 3.0em;
 }
 H2{
