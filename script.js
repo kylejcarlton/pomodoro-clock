@@ -14,7 +14,7 @@ $(document).ready(function(){
     percent = Math.round(workTimeLeft/workTime*100);
     percent = percent+"%";
     console.log(percent);
-    $("#worktime").css("width", percent);
+    $("#wtleft").css("width", percent);
 
     if(workTimeLeft < 0){
       clearInterval();

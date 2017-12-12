@@ -27,13 +27,16 @@ H2{
   margin: 0 auto;
   height: 25px;
   width: 100%;
-  background-color: #9bcd50;
+  background-color: #C0C0C0;
 }
-#wtspan{
+#wtleft{
   margin: 0 auto;
   height: 25px;
   width: 100%;
-  background-color: red;
+  background-color: #9bcd50;
+}
+#test{
+  position: absolute;
 }
 #breaktime{
   margin: 0 auto;
