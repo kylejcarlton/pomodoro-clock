@@ -24,21 +24,32 @@ H2{
   color: rgb(91,97,106);
 }
 #worktime{
+  border-radius: 10px;
   margin: 0 auto;
   height: 25px;
   width: 100%;
-  background-color: #C0C0C0;
+  background: repeating-linear-gradient(
+  45deg,
+  #C0C0C0,
+  #C0C0C0 10px,
+  #696969 10px,
+  #696969 20px
+);
 }
 #wtleft{
+  border-radius: 10px;
   margin: 0 auto;
   height: 25px;
   width: 100%;
   background-color: #9bcd50;
 }
-#test{
+#wtspan{
   position: absolute;
+  width: 140px;
+  margin-left: -70px;
 }
 #breaktime{
+  border-radius: 10px;
   margin: 0 auto;
   margin-top: 50px;
   height: 25px;
