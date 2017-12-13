@@ -2,7 +2,7 @@ $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent;
 
   workTimeLeft = workTime;
-  setInterval(workingTime, 1000);
+  var x = setInterval(workingTime, 1000);
   function workingTime(){
     workTimeLeft = workTimeLeft - 1000;
     minutes = Math.floor((workTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
@@ -15,8 +15,8 @@ $(document).ready(function(){
     percent = percent+"%";
     console.log(percent);
     $("#wtleft").css("width", percent);
-    if(workTimeLeft < 0){
-      clearInterval();
+    if(workTimeLeft = 0){
+      clearInterval(x);
     }
   }
 
