@@ -14,7 +14,7 @@ H1{
   position: absolute;
   width: 100px;
   margin-left: -120px;
-  margin-top: 70px;
+  margin-top: 75px;
 }
 #play:hover{
   text-shadow: 0px 0px 20px white;
@@ -30,7 +30,7 @@ H2{
   margin: 0 auto;
   text-align: center;
 }
-#controls{
+.controls{
   color: rgb(91,97,106);
 }
 #worktime{
