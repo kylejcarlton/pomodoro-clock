@@ -2,20 +2,6 @@ $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
-  function convertMs(ms){
-    minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-    seconds = Math.floor((ms % (1000 * 60)) / 1000);
-    if(seconds < 10){
-      seconds = "0" + seconds;
-    }
-    return(minutes+":"+seconds);
-  };
-  function timeControlPlus(){
-
-  };
-  function timeControlMinus(){
-
-  };
   $("#wTMinus").click(function(){
     if(workTime > 0){
       workTime = workTime - 60000;
