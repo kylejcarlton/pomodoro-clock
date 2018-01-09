@@ -72,6 +72,7 @@ $(document).ready(function(){
         minutes = Math.floor((workTime % (1000 * 60 * 60)) / (1000 * 60));
         $("#wt").html(minutes+":00");
         breakTimeLeft = breakTime;
+        workTimeLeft = workTime;
         y = setInterval(breakTimeFunc, 1000);
       }
     }
@@ -92,6 +93,7 @@ $(document).ready(function(){
         minutes = Math.floor((breakTime % (1000 * 60 * 60)) / (1000 * 60));
         $("#bt").html(minutes+":00");
         workTimeLeft = workTime;
+        breakTimeLeft = breakTime;
         x = setInterval(workingTime, 1000);
       }
     }
