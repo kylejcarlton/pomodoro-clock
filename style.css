@@ -31,10 +31,13 @@ H2{
   text-align: center;
 }
 .controls{
-  color: rgb(91,97,106);
+  color: white;
 }
 .controls:hover{
   text-shadow: 2px 2px 10px white;
+}
+.time{
+  margin-left: -150px;
 }
 #worktime{
   border-radius: 10px;
@@ -56,15 +59,15 @@ H2{
   width: 100%;
   background-color: #9bcd50;
 }
-#wtspan{
+#wtdiv{
   position: absolute;
   width: 140px;
-  margin-left: -70px;
+  margin: 0 50%;
 }
 #breaktime{
   border-radius: 10px;
   margin: 0 auto;
-  margin-top: 50px;
+  margin-top: 30px;
   height: 25px;
   width: 100%;
   background: repeating-linear-gradient(
@@ -82,8 +85,9 @@ H2{
   width: 100%;
   background-color: #E0CA9A;
 }
-#btspan{
+#btdiv{
   position: absolute;
   width: 140px;
-  margin-left: -70px;
+  margin: 0 50%;
+  margin-top: 30px;
 }
