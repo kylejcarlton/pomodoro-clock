@@ -1,6 +1,7 @@
 $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
   var audioCtx;
+  var beepBuffer;
   function getOrCreateAudioContext(){
     if(audioCtx){
       return audioCtx;
@@ -31,25 +32,36 @@ $(document).ready(function(){
     return Promise.resolve(context);
   }
 
+  function getBeepBuffer(context){
+    if(beepBuffer){
+      return beepBuffer;
+    }
+    var duration = 0.4; // seconds
+    var sampleRate = context.sampleRate;
+    var frameCount = Math.floor(sampleRate * duration);
+    var buffer = context.createBuffer(1, frameCount, sampleRate);
+    var data = buffer.getChannelData(0);
+    for(var i = 0; i < frameCount; i++){
+      var t = i / sampleRate;
+      var envelope = Math.min(1, i / (sampleRate * 0.02)) * (1 - (i / frameCount));
+      data[i] = Math.sin(2 * Math.PI * 660 * t) * envelope * 0.5;
+    }
+    beepBuffer = buffer;
+    return buffer;
+  }
+
   function playBeep(){
     ensureAudioContextReady().then(function(context){
       if(!context || context.state !== "running"){
         return;
       }
-      var oscillator = context.createOscillator();
-      var gainNode = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = 880;
-      gainNode.gain.setValueAtTime(0.001, context.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.2, context.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.25);
-      oscillator.connect(gainNode);
-      gainNode.connect(context.destination);
-      oscillator.start();
-      oscillator.stop(context.currentTime + 0.3);
+      var source = context.createBufferSource();
+      source.buffer = getBeepBuffer(context);
+      source.connect(context.destination);
+      source.start();
     });
   }
-  $(document).one("click keydown touchstart", function(){
+  $(document).one("click keydown touchstart touchend", function(){
     ensureAudioContextReady();
   });
   $("#wTMinus").click(function(){
