@@ -1,6 +1,7 @@
 $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
   var audioCtx;
+  var masterGain;
   var beepBuffer;
   function getOrCreateAudioContext(){
     if(audioCtx){
@@ -13,6 +14,19 @@ $(document).ready(function(){
       audioCtx = new webkitAudioContext();
     }
     return audioCtx || null;
+  }
+
+  function getMasterGain(context){
+    if(!context){
+      return null;
+    }
+    if(masterGain){
+      return masterGain;
+    }
+    masterGain = context.createGain();
+    masterGain.gain.value = 0.85;
+    masterGain.connect(context.destination);
+    return masterGain;
   }
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
@@ -32,6 +46,26 @@ $(document).ready(function(){
     return Promise.resolve(context);
   }
 
+  function primeAudio(){
+    ensureAudioContextReady().then(function(context){
+      if(!context){
+        return;
+      }
+      var gainNode = getMasterGain(context);
+      var osc = context.createOscillator();
+      var gain = context.createGain();
+      var now = context.currentTime;
+      osc.frequency.value = 40;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.002, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.connect(gain);
+      gain.connect(gainNode);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    });
+  }
+
   function getBeepBuffer(context){
     if(beepBuffer){
       return beepBuffer;
@@ -42,9 +76,9 @@ $(document).ready(function(){
     var buffer = context.createBuffer(1, frameCount, sampleRate);
     var data = buffer.getChannelData(0);
     var attack = 0.03;
-    var decay = 0.2;
-    var sustainLevel = 0.7;
-    var release = 0.25;
+    var decay = 0.18;
+    var sustainLevel = 0.78;
+    var release = 0.35;
     for(var i = 0; i < frameCount; i++){
       var t = i / sampleRate;
       var envelope;
@@ -60,10 +94,11 @@ $(document).ready(function(){
       else{
         envelope = sustainLevel * Math.max(0, (duration - t) / release);
       }
-      var sub = Math.sin(2 * Math.PI * 110 * t) * 0.9;
-      var fundamental = Math.sin(2 * Math.PI * 220 * t);
-      var harmonic = Math.sin(2 * Math.PI * 440 * t) * 0.45;
-      data[i] = (sub + fundamental + harmonic) * envelope * 0.5;
+      var sub = Math.sin(2 * Math.PI * 110 * t) * 0.95;
+      var fundamental = Math.sin(2 * Math.PI * 220 * t) * 0.95;
+      var lowMid = Math.sin(2 * Math.PI * 330 * t) * 0.55;
+      var harmonic = Math.sin(2 * Math.PI * 440 * t) * 0.32;
+      data[i] = (sub + fundamental + lowMid + harmonic) * envelope * 0.65;
     }
     beepBuffer = buffer;
     return buffer;
@@ -76,12 +111,13 @@ $(document).ready(function(){
       }
       var source = context.createBufferSource();
       source.buffer = getBeepBuffer(context);
-      source.connect(context.destination);
+      var destination = getMasterGain(context) || context.destination;
+      source.connect(destination);
       source.start();
     });
   }
-  $(document).one("click keydown touchstart touchend", function(){
-    ensureAudioContextReady();
+  $(document).one("click keydown touchstart touchend pointerdown", function(){
+    primeAudio();
   });
   $("#wTMinus").click(function(){
     if(workTime > 60000 && paused == true){
