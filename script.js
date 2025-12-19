@@ -3,6 +3,7 @@ $(document).ready(function(){
   var audioCtx;
   var masterGain;
   var beepBuffer;
+  var fallbackAudio;
   function getOrCreateAudioContext(){
     if(audioCtx){
       return audioCtx;
@@ -64,6 +65,18 @@ $(document).ready(function(){
       osc.start(now);
       osc.stop(now + 0.06);
     });
+
+    try{
+      var unlockedFallback = getFallbackAudio();
+      var playAttempt = unlockedFallback.play();
+      if(playAttempt && playAttempt.then){
+        playAttempt.then(function(){
+          unlockedFallback.pause();
+          unlockedFallback.currentTime = 0;
+        }).catch(function(){});
+      }
+    }
+    catch(e){}
   }
 
   function getBeepBuffer(context){
@@ -104,9 +117,79 @@ $(document).ready(function(){
     return buffer;
   }
 
+  function createFallbackToneUri(){
+    var sampleRate = 16000;
+    var duration = 0.5;
+    var frequency = 520;
+    var harmonic = 1040;
+    var samples = Math.floor(sampleRate * duration);
+    var dataSize = samples * 2;
+    var buffer = new ArrayBuffer(44 + dataSize);
+    var view = new DataView(buffer);
+
+    function writeString(offset, str){
+      for(var i = 0; i < str.length; i++){
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    }
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, "data");
+    view.setUint32(40, dataSize, true);
+
+    var offset = 44;
+    for(var i = 0; i < samples; i++){
+      var t = i / sampleRate;
+      var sample = Math.sin(2 * Math.PI * frequency * t) * 0.72 + Math.sin(2 * Math.PI * harmonic * t) * 0.32;
+      var clamped = Math.max(-1, Math.min(1, sample));
+      view.setInt16(offset, clamped * 0x7FFF, true);
+      offset += 2;
+    }
+
+    var bytes = new Uint8Array(buffer);
+    var binary = "";
+    for(var b = 0; b < bytes.length; b++){
+      binary += String.fromCharCode(bytes[b]);
+    }
+    return "data:audio/wav;base64," + btoa(binary);
+  }
+
+  function getFallbackAudio(){
+    if(fallbackAudio){
+      return fallbackAudio;
+    }
+    var uri = createFallbackToneUri();
+    fallbackAudio = new Audio(uri);
+    fallbackAudio.volume = 0.8;
+    return fallbackAudio;
+  }
+
+  function playFallbackBeep(){
+    try{
+      var tone = getFallbackAudio();
+      tone.currentTime = 0;
+      var playPromise = tone.play();
+      if(playPromise && playPromise.catch){
+        playPromise.catch(function(){});
+      }
+    }
+    catch(e){}
+  }
+
   function playBeep(){
     ensureAudioContextReady().then(function(context){
       if(!context || context.state !== "running"){
+        playFallbackBeep();
         return;
       }
       var source = context.createBufferSource();
@@ -114,6 +197,7 @@ $(document).ready(function(){
       var destination = getMasterGain(context) || context.destination;
       source.connect(destination);
       source.start();
+      playFallbackBeep();
     });
   }
   $(document).one("click keydown touchstart touchend pointerdown", function(){
