@@ -36,17 +36,34 @@ $(document).ready(function(){
     if(beepBuffer){
       return beepBuffer;
     }
-    var duration = 1.0; // seconds for a fuller alert
+    var duration = 1.5; // longer, more sustained alert
     var sampleRate = context.sampleRate;
     var frameCount = Math.floor(sampleRate * duration);
     var buffer = context.createBuffer(1, frameCount, sampleRate);
     var data = buffer.getChannelData(0);
+    var attack = 0.03;
+    var decay = 0.2;
+    var sustainLevel = 0.7;
+    var release = 0.25;
     for(var i = 0; i < frameCount; i++){
       var t = i / sampleRate;
-      var envelope = Math.min(1, i / (sampleRate * 0.02)) * (1 - Math.pow(i / frameCount, 1.1));
-      var fundamental = Math.sin(2 * Math.PI * 440 * t);
-      var harmonic = Math.sin(2 * Math.PI * 660 * t) * 0.6;
-      data[i] = (fundamental + harmonic) * envelope * 0.6;
+      var envelope;
+      if(t < attack){
+        envelope = t / attack;
+      }
+      else if(t < attack + decay){
+        envelope = 1 - (1 - sustainLevel) * ((t - attack) / decay);
+      }
+      else if(t < duration - release){
+        envelope = sustainLevel;
+      }
+      else{
+        envelope = sustainLevel * Math.max(0, (duration - t) / release);
+      }
+      var sub = Math.sin(2 * Math.PI * 110 * t) * 0.9;
+      var fundamental = Math.sin(2 * Math.PI * 220 * t);
+      var harmonic = Math.sin(2 * Math.PI * 440 * t) * 0.45;
+      data[i] = (sub + fundamental + harmonic) * envelope * 0.5;
     }
     beepBuffer = buffer;
     return buffer;
