@@ -106,16 +106,17 @@ $(document).ready(function(){
     }
     function workingTime(){
       workTimeLeft = workTimeLeft - 1000;
-      minutes = Math.floor((workTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((workTimeLeft % (1000 * 60)) / 1000);
+      var remainingWorkMs = Math.max(0, workTimeLeft);
+      minutes = Math.floor((remainingWorkMs % (1000 * 60 * 60)) / (1000 * 60));
+      seconds = Math.floor((remainingWorkMs % (1000 * 60)) / 1000);
       if(seconds < 10){
         seconds = "0" + seconds;
       }
       $("#wt").html(minutes+":"+seconds);
-      percent = Math.round(workTimeLeft/workTime*100);
+      percent = Math.round(remainingWorkMs/workTime*100);
       percent = percent+"%";
       $("#wtleft").css("width", percent);
-      if(workTimeLeft == 0){
+      if(workTimeLeft <= 0){
         clearInterval(x);
         pomodoros++;
         $("#pomodoros").html(pomodoros);
@@ -130,16 +131,17 @@ $(document).ready(function(){
     }
     function breakTimeFunc(){
       breakTimeLeft = breakTimeLeft - 1000;
-      minutes = Math.floor((breakTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((breakTimeLeft % (1000 * 60)) / 1000);
+      var remainingBreakMs = Math.max(0, breakTimeLeft);
+      minutes = Math.floor((remainingBreakMs % (1000 * 60 * 60)) / (1000 * 60));
+      seconds = Math.floor((remainingBreakMs % (1000 * 60)) / 1000);
       if(seconds < 10){
         seconds = "0" + seconds;
       }
       $("#bt").html(minutes+":"+seconds);
-      percent = Math.round(breakTimeLeft/breakTime*100);
+      percent = Math.round(remainingBreakMs/breakTime*100);
       percent = percent+"%";
       $("#btleft").css("width", percent);
-      if(breakTimeLeft == 0){
+      if(breakTimeLeft <= 0){
         clearInterval(y);
         $("#btleft").css("width", "100%");
         minutes = Math.floor((breakTime % (1000 * 60 * 60)) / (1000 * 60));
