@@ -36,15 +36,17 @@ $(document).ready(function(){
     if(beepBuffer){
       return beepBuffer;
     }
-    var duration = 0.4; // seconds
+    var duration = 1.0; // seconds for a fuller alert
     var sampleRate = context.sampleRate;
     var frameCount = Math.floor(sampleRate * duration);
     var buffer = context.createBuffer(1, frameCount, sampleRate);
     var data = buffer.getChannelData(0);
     for(var i = 0; i < frameCount; i++){
       var t = i / sampleRate;
-      var envelope = Math.min(1, i / (sampleRate * 0.02)) * (1 - (i / frameCount));
-      data[i] = Math.sin(2 * Math.PI * 660 * t) * envelope * 0.5;
+      var envelope = Math.min(1, i / (sampleRate * 0.02)) * (1 - Math.pow(i / frameCount, 1.1));
+      var fundamental = Math.sin(2 * Math.PI * 440 * t);
+      var harmonic = Math.sin(2 * Math.PI * 660 * t) * 0.6;
+      data[i] = (fundamental + harmonic) * envelope * 0.6;
     }
     beepBuffer = buffer;
     return buffer;
