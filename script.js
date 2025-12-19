@@ -1,7 +1,37 @@
 $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
+  var audioCtx = window.AudioContext ? new AudioContext() : (window.webkitAudioContext ? new webkitAudioContext() : null);
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
+
+  function ensureAudioContextReady(){
+    if(!audioCtx){
+      return Promise.resolve();
+    }
+    if(audioCtx.state === "suspended"){
+      return audioCtx.resume().catch(function(){});
+    }
+    return Promise.resolve();
+  }
+
+  function playBeep(){
+    ensureAudioContextReady().then(function(){
+      if(!audioCtx || audioCtx.state !== "running"){
+        return;
+      }
+      var oscillator = audioCtx.createOscillator();
+      var gainNode = audioCtx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    });
+  }
   $("#wTMinus").click(function(){
     if(workTime > 60000 && paused == true){
       workTime = workTime - 60000;
@@ -35,6 +65,7 @@ $(document).ready(function(){
     }
   });
   $("#play").click(function(){
+    ensureAudioContextReady();
     if (paused == true) {
       if(breakTime == breakTimeLeft){
         $("#play").html('<i class="fa fa-pause fa-3x" aria-hidden="true"></i>');
@@ -73,6 +104,7 @@ $(document).ready(function(){
         $("#wt").html(minutes+":00");
         breakTimeLeft = breakTime;
         workTimeLeft = workTime;
+        playBeep();
         y = setInterval(breakTimeFunc, 1000);
       }
     }
@@ -94,6 +126,7 @@ $(document).ready(function(){
         $("#bt").html(minutes+":00");
         workTimeLeft = workTime;
         breakTimeLeft = breakTime;
+        playBeep();
         x = setInterval(workingTime, 1000);
       }
     }
