@@ -1,7 +1,57 @@
 $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
+  var audioCtx;
+  function getOrCreateAudioContext(){
+    if(audioCtx){
+      return audioCtx;
+    }
+    if(window.AudioContext){
+      audioCtx = new AudioContext();
+    }
+    else if(window.webkitAudioContext){
+      audioCtx = new webkitAudioContext();
+    }
+    return audioCtx || null;
+  }
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
+
+  function ensureAudioContextReady(){
+    var context = getOrCreateAudioContext();
+    if(!context){
+      return Promise.resolve(null);
+    }
+    if(context.state === "suspended"){
+      return context.resume().then(function(){
+        return context;
+      }).catch(function(){
+        return context;
+      });
+    }
+    return Promise.resolve(context);
+  }
+
+  function playBeep(){
+    ensureAudioContextReady().then(function(context){
+      if(!context || context.state !== "running"){
+        return;
+      }
+      var oscillator = context.createOscillator();
+      var gainNode = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gainNode.gain.setValueAtTime(0.001, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.2, context.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.25);
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.3);
+    });
+  }
+  $(document).one("click keydown touchstart", function(){
+    ensureAudioContextReady();
+  });
   $("#wTMinus").click(function(){
     if(workTime > 60000 && paused == true){
       workTime = workTime - 60000;
@@ -35,6 +85,7 @@ $(document).ready(function(){
     }
   });
   $("#play").click(function(){
+    ensureAudioContextReady();
     if (paused == true) {
       if(breakTime == breakTimeLeft){
         $("#play").html('<i class="fa fa-pause fa-3x" aria-hidden="true"></i>');
@@ -55,16 +106,17 @@ $(document).ready(function(){
     }
     function workingTime(){
       workTimeLeft = workTimeLeft - 1000;
-      minutes = Math.floor((workTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((workTimeLeft % (1000 * 60)) / 1000);
+      var remainingWorkMs = Math.max(0, workTimeLeft);
+      minutes = Math.floor((remainingWorkMs % (1000 * 60 * 60)) / (1000 * 60));
+      seconds = Math.floor((remainingWorkMs % (1000 * 60)) / 1000);
       if(seconds < 10){
         seconds = "0" + seconds;
       }
       $("#wt").html(minutes+":"+seconds);
-      percent = Math.round(workTimeLeft/workTime*100);
+      percent = Math.round(remainingWorkMs/workTime*100);
       percent = percent+"%";
       $("#wtleft").css("width", percent);
-      if(workTimeLeft == 0){
+      if(workTimeLeft <= 0){
         clearInterval(x);
         pomodoros++;
         $("#pomodoros").html(pomodoros);
@@ -73,27 +125,30 @@ $(document).ready(function(){
         $("#wt").html(minutes+":00");
         breakTimeLeft = breakTime;
         workTimeLeft = workTime;
+        playBeep();
         y = setInterval(breakTimeFunc, 1000);
       }
     }
     function breakTimeFunc(){
       breakTimeLeft = breakTimeLeft - 1000;
-      minutes = Math.floor((breakTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((breakTimeLeft % (1000 * 60)) / 1000);
+      var remainingBreakMs = Math.max(0, breakTimeLeft);
+      minutes = Math.floor((remainingBreakMs % (1000 * 60 * 60)) / (1000 * 60));
+      seconds = Math.floor((remainingBreakMs % (1000 * 60)) / 1000);
       if(seconds < 10){
         seconds = "0" + seconds;
       }
       $("#bt").html(minutes+":"+seconds);
-      percent = Math.round(breakTimeLeft/breakTime*100);
+      percent = Math.round(remainingBreakMs/breakTime*100);
       percent = percent+"%";
       $("#btleft").css("width", percent);
-      if(breakTimeLeft == 0){
+      if(breakTimeLeft <= 0){
         clearInterval(y);
         $("#btleft").css("width", "100%");
         minutes = Math.floor((breakTime % (1000 * 60 * 60)) / (1000 * 60));
         $("#bt").html(minutes+":00");
         workTimeLeft = workTime;
         breakTimeLeft = breakTime;
+        playBeep();
         x = setInterval(workingTime, 1000);
       }
     }
