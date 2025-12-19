@@ -1,37 +1,57 @@
 $(document).ready(function(){
   var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
-  var audioCtx = window.AudioContext ? new AudioContext() : (window.webkitAudioContext ? new webkitAudioContext() : null);
+  var audioCtx;
+  function getOrCreateAudioContext(){
+    if(audioCtx){
+      return audioCtx;
+    }
+    if(window.AudioContext){
+      audioCtx = new AudioContext();
+    }
+    else if(window.webkitAudioContext){
+      audioCtx = new webkitAudioContext();
+    }
+    return audioCtx || null;
+  }
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
 
   function ensureAudioContextReady(){
-    if(!audioCtx){
-      return Promise.resolve();
+    var context = getOrCreateAudioContext();
+    if(!context){
+      return Promise.resolve(null);
     }
-    if(audioCtx.state === "suspended"){
-      return audioCtx.resume().catch(function(){});
+    if(context.state === "suspended"){
+      return context.resume().then(function(){
+        return context;
+      }).catch(function(){
+        return context;
+      });
     }
-    return Promise.resolve();
+    return Promise.resolve(context);
   }
 
   function playBeep(){
-    ensureAudioContextReady().then(function(){
-      if(!audioCtx || audioCtx.state !== "running"){
+    ensureAudioContextReady().then(function(context){
+      if(!context || context.state !== "running"){
         return;
       }
-      var oscillator = audioCtx.createOscillator();
-      var gainNode = audioCtx.createGain();
+      var oscillator = context.createOscillator();
+      var gainNode = context.createGain();
       oscillator.type = "sine";
       oscillator.frequency.value = 880;
-      gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+      gainNode.gain.setValueAtTime(0.001, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.2, context.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.25);
       oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      gainNode.connect(context.destination);
       oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.3);
+      oscillator.stop(context.currentTime + 0.3);
     });
   }
+  $(document).one("click keydown touchstart", function(){
+    ensureAudioContextReady();
+  });
   $("#wTMinus").click(function(){
     if(workTime > 60000 && paused == true){
       workTime = workTime - 60000;
