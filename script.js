@@ -1,5 +1,8 @@
 $(document).ready(function(){
-  var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, percent, pomodoros=0, x, y, paused = true;
+  var workTime = 1500000, breakTime = 300000, workTimeLeft, breakTimeLeft, minutes, seconds, pomodoros=0, paused = true;
+  var timerInterval;
+  var timerMode = "work";
+  var phaseEndsAt = null;
   var audioCtx;
   var masterGain;
   var beepBuffer;
@@ -31,6 +34,80 @@ $(document).ready(function(){
   }
   workTimeLeft = workTime;
   breakTimeLeft = breakTime;
+
+  function formatAndRenderTime(selector, remainingMs){
+    var clamped = Math.max(0, remainingMs);
+    minutes = Math.floor((clamped % (1000 * 60 * 60)) / (1000 * 60));
+    seconds = Math.floor((clamped % (1000 * 60)) / 1000);
+    if(seconds < 10){
+      seconds = "0" + seconds;
+    }
+    $(selector).html(minutes+":"+seconds);
+  }
+
+  function updateProgress(selector, remainingMs, totalMs){
+    var pct = Math.round(Math.max(0, remainingMs) / totalMs * 100);
+    $(selector).css("width", pct + "%");
+  }
+
+  function stopTicking(){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function startTicking(){
+    stopTicking();
+    timerInterval = setInterval(updateActiveTimer, 250);
+    updateActiveTimer();
+  }
+
+  function finishWorkPhase(){
+    pomodoros++;
+    $("#pomodoros").html(pomodoros);
+    $("#wtleft").css("width", "100%");
+    minutes = Math.floor((workTime % (1000 * 60 * 60)) / (1000 * 60));
+    $("#wt").html(minutes+":00");
+    workTimeLeft = workTime;
+    breakTimeLeft = breakTime;
+    timerMode = "break";
+    phaseEndsAt = Date.now() + breakTimeLeft;
+    playBeep();
+  }
+
+  function finishBreakPhase(){
+    $("#btleft").css("width", "100%");
+    minutes = Math.floor((breakTime % (1000 * 60 * 60)) / (1000 * 60));
+    $("#bt").html(minutes+":00");
+    workTimeLeft = workTime;
+    breakTimeLeft = breakTime;
+    timerMode = "work";
+    phaseEndsAt = Date.now() + workTimeLeft;
+    playBeep();
+  }
+
+  function updateActiveTimer(){
+    if(paused || !phaseEndsAt){
+      return;
+    }
+
+    var remaining = phaseEndsAt - Date.now();
+    if(timerMode === "work"){
+      workTimeLeft = Math.max(0, remaining);
+      formatAndRenderTime("#wt", workTimeLeft);
+      updateProgress("#wtleft", workTimeLeft, workTime);
+      if(remaining <= 0){
+        finishWorkPhase();
+      }
+    }
+    else{
+      breakTimeLeft = Math.max(0, remaining);
+      formatAndRenderTime("#bt", breakTimeLeft);
+      updateProgress("#btleft", breakTimeLeft, breakTime);
+      if(remaining <= 0){
+        finishBreakPhase();
+      }
+    }
+  }
 
   function ensureAudioContextReady(){
     var context = getOrCreateAudioContext();
@@ -238,70 +315,23 @@ $(document).ready(function(){
   $("#play").click(function(){
     ensureAudioContextReady();
     if (paused == true) {
-      if(breakTime == breakTimeLeft){
-        $("#play").html('<i class="fa fa-pause fa-3x" aria-hidden="true"></i>');
-        paused = false;
-        x = setInterval(workingTime, 1000);
-      }
-      else{
-        $("#play").html('<i class="fa fa-pause fa-3x" aria-hidden="true"></i>');
-        paused = false;
-        y = setInterval(breakTimeFunc, 1000);
-      }
+      $("#play").html('<i class="fa fa-pause fa-3x" aria-hidden="true"></i>');
+      paused = false;
+      timerMode = breakTimeLeft < breakTime ? "break" : "work";
+      phaseEndsAt = Date.now() + (timerMode === "work" ? workTimeLeft : breakTimeLeft);
+      startTicking();
     }
     else{
       $("#play").html('<i class="fa fa-play fa-3x" aria-hidden="true"></i>');
       paused=true;
-      clearInterval(x);
-      clearInterval(y);
-    }
-    function workingTime(){
-      workTimeLeft = workTimeLeft - 1000;
-      var remainingWorkMs = Math.max(0, workTimeLeft);
-      minutes = Math.floor((remainingWorkMs % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((remainingWorkMs % (1000 * 60)) / 1000);
-      if(seconds < 10){
-        seconds = "0" + seconds;
+      if(timerMode === "work"){
+        workTimeLeft = Math.max(0, phaseEndsAt - Date.now());
       }
-      $("#wt").html(minutes+":"+seconds);
-      percent = Math.round(remainingWorkMs/workTime*100);
-      percent = percent+"%";
-      $("#wtleft").css("width", percent);
-      if(workTimeLeft <= 0){
-        clearInterval(x);
-        pomodoros++;
-        $("#pomodoros").html(pomodoros);
-        $("#wtleft").css("width", "100%");
-        minutes = Math.floor((workTime % (1000 * 60 * 60)) / (1000 * 60));
-        $("#wt").html(minutes+":00");
-        breakTimeLeft = breakTime;
-        workTimeLeft = workTime;
-        playBeep();
-        y = setInterval(breakTimeFunc, 1000);
+      else{
+        breakTimeLeft = Math.max(0, phaseEndsAt - Date.now());
       }
-    }
-    function breakTimeFunc(){
-      breakTimeLeft = breakTimeLeft - 1000;
-      var remainingBreakMs = Math.max(0, breakTimeLeft);
-      minutes = Math.floor((remainingBreakMs % (1000 * 60 * 60)) / (1000 * 60));
-      seconds = Math.floor((remainingBreakMs % (1000 * 60)) / 1000);
-      if(seconds < 10){
-        seconds = "0" + seconds;
-      }
-      $("#bt").html(minutes+":"+seconds);
-      percent = Math.round(remainingBreakMs/breakTime*100);
-      percent = percent+"%";
-      $("#btleft").css("width", percent);
-      if(breakTimeLeft <= 0){
-        clearInterval(y);
-        $("#btleft").css("width", "100%");
-        minutes = Math.floor((breakTime % (1000 * 60 * 60)) / (1000 * 60));
-        $("#bt").html(minutes+":00");
-        workTimeLeft = workTime;
-        breakTimeLeft = breakTime;
-        playBeep();
-        x = setInterval(workingTime, 1000);
-      }
+      stopTicking();
+      phaseEndsAt = null;
     }
   });
 }); //END DOC READY
